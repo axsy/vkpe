@@ -19,9 +19,9 @@ import java.lang.annotation.Retention;
 @Documented
 public @interface ValidScope {
 
-	String message() default "Wrong media set to be dumped";
+    String message() default "Wrong media set to be dumped";
 
-	Class<?>[] groups() default { };
+    Class<?>[] groups() default {};
 
-	Class<? extends Payload>[] payload() default { };
+    Class<? extends Payload>[] payload() default {};
 }

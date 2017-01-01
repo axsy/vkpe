@@ -13,7 +13,7 @@ import java.lang.annotation.Documented;
 @Retention(RUNTIME)
 @Documented
 public @interface Scope {
-	
-	int mask();
+
+    int mask();
 
 }
