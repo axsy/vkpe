@@ -11,7 +11,7 @@ import com.alekseyorlov.vkdump.parameters.annotation.ValidScope;
 @ValidScope
 public class ApplicationParameters {
 
-    @Scope("photo")
+    @Scope("photos")
     @Option(name = "-photos", usage = "Dump photos")
     private Boolean dumpPhotos;
 
