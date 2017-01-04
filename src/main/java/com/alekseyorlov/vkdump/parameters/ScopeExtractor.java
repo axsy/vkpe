@@ -1,24 +1,26 @@
 package com.alekseyorlov.vkdump.parameters;
 
 import java.lang.reflect.Field;
+import java.util.HashSet;
+import java.util.Set;
 
 import com.alekseyorlov.vkdump.parameters.annotation.Scope;
 
-public class ScopeGenerator {
+public class ScopeExtractor {
 
-    private Parameters parameters;
+    private ApplicationParameters parameters;
 
-    public ScopeGenerator(Parameters parameters) {
+    public ScopeExtractor(ApplicationParameters parameters) {
         this.parameters = parameters;
     }
 
-    public int generateScope() {
-        int scope = 0;
+    public Set<String> extract() {
+        Set<String> scopes = new HashSet<>();
 
         Field[] fields = parameters.getClass().getDeclaredFields();
         for (Field field : fields) {
-            Scope scopeBitMaskAnnotation = field.getAnnotation(Scope.class);
-            if (scopeBitMaskAnnotation != null) {
+            Scope scopeAnnotation = field.getAnnotation(Scope.class);
+            if (scopeAnnotation != null) {
                 if (!field.getType().equals(Boolean.class)) {
                     throw new ScopeWrongTypeException();
                 }
@@ -26,7 +28,7 @@ public class ScopeGenerator {
                 try {
                     Boolean value = (Boolean) field.get(parameters);
                     if (value != null && value.equals(Boolean.TRUE)) {
-                        scope += scopeBitMaskAnnotation.mask();
+                        scopes.add(scopeAnnotation.value());
                     }
                 } catch (IllegalArgumentException | IllegalAccessException e) {
                     throw new RuntimeException(e);
@@ -34,6 +36,6 @@ public class ScopeGenerator {
             }
         }
 
-        return scope;
+        return scopes;
     }
 }

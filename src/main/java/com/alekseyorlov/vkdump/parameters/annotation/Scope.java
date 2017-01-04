@@ -14,6 +14,6 @@ import java.lang.annotation.Documented;
 @Documented
 public @interface Scope {
 
-    int mask();
+    String value();
 
 }

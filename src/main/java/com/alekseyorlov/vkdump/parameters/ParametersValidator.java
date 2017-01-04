@@ -5,17 +5,17 @@ import javax.validation.ConstraintValidatorContext;
 
 import com.alekseyorlov.vkdump.parameters.annotation.ValidScope;
 
-public class ParametersValidator implements ConstraintValidator<ValidScope, Parameters> {
+public class ParametersValidator implements ConstraintValidator<ValidScope, ApplicationParameters> {
 
     @Override
     public void initialize(ValidScope constraintAnnotation) {
     }
 
     @Override
-    public boolean isValid(Parameters parameters, ConstraintValidatorContext context) {
-        ScopeGenerator generator = new ScopeGenerator(parameters);
+    public boolean isValid(ApplicationParameters parameters, ConstraintValidatorContext context) {
+        ScopeExtractor scopeExtractor = new ScopeExtractor(parameters);
 
-        return generator.generateScope() != 0;
+        return !scopeExtractor.extract().isEmpty();
     }
 
 }
