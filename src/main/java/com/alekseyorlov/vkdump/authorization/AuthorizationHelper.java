@@ -38,7 +38,9 @@ public class AuthorizationHelper {
     
     public String getRedirectUri() {
         
-        return "http://localhost:" + parameters.getCallbackServerPort();
+        return "http://localhost:"
+                + parameters.getCallbackServerPort()
+                + AuthorizationClient.AUTHORIZATION_CODE_CALLBACK_URI;
     }
     
 }

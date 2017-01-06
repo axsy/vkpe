@@ -31,8 +31,14 @@ import com.vk.api.sdk.exceptions.OAuthException;
 import com.vk.api.sdk.httpclient.HttpTransportClient;
 import com.vk.api.sdk.objects.UserAuthResponse;
 
+// TODO: Implement capcha error support as well as limit error support
+// TODO: Re-think the way how to pull out all the internal classes
+
 public class AuthorizationClient {
 
+    public static final String AUTHORIZATION_CODE_CALLBACK_URI = "/callback";
+    public static final String CAPTCHA_ERROR_URI = "/captcha"; 
+    
     private static final Logger logger = LogManager.getLogger(AuthorizationClient.class);
     
     private static final Integer SERVER_SHUTDOWN_GRACE_PERIOD = 5; // seconds
@@ -48,7 +54,9 @@ public class AuthorizationClient {
                 .setListenerPort(parameters.getCallbackServerPort())
                 .setSocketConfig(SocketConfig.DEFAULT)
                 .setExceptionLogger(new CallbackServerExceptionLogger())
-                .registerHandler("/", new CallbackServerRequestHandler(actorHandler, parameters))
+                .registerHandler(AUTHORIZATION_CODE_CALLBACK_URI,
+                        new CallbackServerRequestHandler(actorHandler, parameters))
+                .registerHandler(CAPTCHA_ERROR_URI, new CapthchaRequestHandler())
                 .create();
     }
     
@@ -62,10 +70,9 @@ public class AuthorizationClient {
         
         try {
             server.start();
-//            server.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
             
             logger.info("Callback server is running");
-        } catch (IOException/* | InterruptedException*/ e) {
+        } catch (IOException e) {
             logger.fatal(e.getMessage());
         }
     }
@@ -143,6 +150,16 @@ public class AuthorizationClient {
         }
     }
     
+    class CapthchaRequestHandler implements HttpRequestHandler {
+
+        @Override
+        public void handle(HttpRequest request, HttpResponse response, HttpContext context)
+                throws HttpException, IOException {
+            response.setEntity(new StringEntity("Captcha, unimplemented yet!"));
+        }
+        
+    }
+    
     class AuthorizationCodeHandler implements Runnable {
 
         private UserActorHandler actorHandler;
@@ -159,8 +176,6 @@ public class AuthorizationClient {
 
         @Override
         public void run() {
-            // It is not necessary anymore
-            stopCallbackServer();
             
             AuthorizationHelper helper = new AuthorizationHelper(parameters);
             TransportClient transportClient = HttpTransportClient.getInstance(); 

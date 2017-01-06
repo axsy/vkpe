@@ -9,8 +9,6 @@ import com.alekseyorlov.vkdump.parameters.ScopeExtractor;
 public class AuthorizationClientParametersMapper {
 
     public AuthorizationClientParameters map(ApplicationParameters applicationParameters) {
-        
-        
         AuthorizationClientParameters clientParameters = new AuthorizationClientParameters();
         
         clientParameters.setAppId(applicationParameters.getAppId());
