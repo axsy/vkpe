@@ -4,7 +4,10 @@ import java.awt.Desktop;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -53,7 +56,7 @@ public class AuthorizationClient {
         vk = new VkApiClient(HttpTransportClient.getInstance());
     }
     
-    public synchronized UserActor authorize(Collection<String> scopes) throws AuthorizationException {
+    public synchronized UserActor authorize(Collection<AuthorizationScope> scopes) throws AuthorizationException {
         if(Desktop.isDesktopSupported())
         {
             try {
@@ -136,14 +139,19 @@ public class AuthorizationClient {
         Desktop.getDesktop().browse(uri);
     }
     
-    private URI getAuthorizationCodeUri(Collection<String> scopes) throws URISyntaxException {
+    private URI getAuthorizationCodeUri(Collection<AuthorizationScope> scopes) throws URISyntaxException {
         URIBuilder builder = new URIBuilder(OAUTH_AUTHORIZE_URL);
         
+        List<String> vkScopes = new ArrayList<>();
+        for(AuthorizationScope scope: scopes) {
+            vkScopes.add(scope.getValue());
+        }
+       
         return builder
             .setParameter("client_id", parameters.getAppId().toString())
             .setParameter("redirect_uri", getAuthCodeCallbackUri())
             .setParameter("display", AUTHORIZATION_PAGE_APPEARANCE)
-            .setParameter("scope", String.join(",", scopes))
+            .setParameter("scope", String.join(",", vkScopes))
             .setParameter("response_type", OAUTH_RESPONSE_TYPE)
             .addParameter("v", API_VERSION)
             .build();

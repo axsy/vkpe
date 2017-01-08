@@ -2,6 +2,8 @@ package com.alekseyorlov.vkdump.parameters.annotation;
 
 import java.lang.annotation.Target;
 
+import com.alekseyorlov.vkdump.authorization.AuthorizationScope;
+
 import java.lang.annotation.Retention;
 
 import static java.lang.annotation.ElementType.FIELD;
@@ -14,6 +16,6 @@ import java.lang.annotation.Documented;
 @Documented
 public @interface Scope {
 
-    String value();
+    AuthorizationScope value();
 
 }

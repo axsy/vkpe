@@ -8,14 +8,17 @@ import org.kohsuke.args4j.Option;
 import com.alekseyorlov.vkdump.parameters.annotation.Scope;
 import com.alekseyorlov.vkdump.parameters.annotation.ValidScope;
 
+import static com.alekseyorlov.vkdump.authorization.AuthorizationScope.PHOTOS;
+import static com.alekseyorlov.vkdump.authorization.AuthorizationScope.AUDIO;
+
 @ValidScope
 public class ApplicationParameters {
 
-    @Scope("photos")
+    @Scope(PHOTOS)
     @Option(name = "-photos", usage = "Dump photos")
     private Boolean dumpPhotos;
 
-    @Scope("audio")
+    @Scope(AUDIO)
     @Option(name = "-audio", usage = "Dump audio")
     private Boolean dumpAudio;
 

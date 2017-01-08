@@ -5,13 +5,14 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.alekseyorlov.vkdump.authorization.AuthorizationScope;
 import com.alekseyorlov.vkdump.parameters.ApplicationParameters;
 import com.alekseyorlov.vkdump.parameters.annotation.Scope;
 
 public final class ScopeUtils {
 
-    public static Collection<String> getActiveScopes(ApplicationParameters parameters) {
-        Set<String> scopes = new HashSet<>();
+    public static Collection<AuthorizationScope> getActiveScopes(ApplicationParameters parameters) {
+        Set<AuthorizationScope> scopes = new HashSet<>();
 
         Field[] fields = parameters.getClass().getDeclaredFields();
         for (Field field : fields) {
