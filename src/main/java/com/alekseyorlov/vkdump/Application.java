@@ -22,10 +22,13 @@ import com.alekseyorlov.vkdump.authorization.exception.AuthorizationException;
 import com.alekseyorlov.vkdump.mapper.AuthorizationClientParametersMapper;
 import com.alekseyorlov.vkdump.parameters.ApplicationParameters;
 import com.alekseyorlov.vkdump.parameters.util.ScopeUtils;
+import com.alekseyorlov.vkdump.service.DumpService;
 import com.alekseyorlov.vkdump.web.HttpServerDirector;
 import com.alekseyorlov.vkdump.web.handler.message.CaptchaMessage;
 import com.alekseyorlov.vkdump.web.handler.message.Message;
 import com.vk.api.sdk.client.actors.UserActor;
+import com.vk.api.sdk.exceptions.ApiException;
+import com.vk.api.sdk.exceptions.ClientException;
 
 public class Application {
     private static final Logger logger = LogManager.getLogger(Application.class);
@@ -57,13 +60,15 @@ public class Application {
             // Wait for server is running
             serverIsStartedSignal.await();
             
-            // Authorize user
+            // Instantiate dump service
             AuthorizationClient authorizationClient = new AuthorizationClient(
                     AuthorizationClientParametersMapper.map(parameters), messageQueue, stopServerSignal);
-            UserActor actor = authorizationClient.authorize(ScopeUtils.getActiveScopes(parameters));
-          
-            logger.info("Access token: " + actor.getAccessToken());
-        } catch (InterruptedException | AuthorizationException e) {
+            DumpService service = new DumpService(authorizationClient, parameters.getPath());
+            
+            // Dump media content
+            service.dump(ScopeUtils.getActiveScopes(parameters));
+            
+        } catch (InterruptedException | AuthorizationException | ApiException | ClientException e) {
             logger.fatal(e.getMessage());
             
             // Shutdown HTTP server
