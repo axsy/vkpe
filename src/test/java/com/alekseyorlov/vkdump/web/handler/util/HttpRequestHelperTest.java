@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -92,7 +93,7 @@ public class HttpRequestHelperTest {
     public final void shouldGetFormParams() throws IOException {
         
         // given
-        String requestBody = "b=2&c=3";
+        String requestBody = "b=%D1%82%D0%B5%D0%BA%D1%81%D1%82&c=3";
         
         BasicHttpEntity entity = new BasicHttpEntity();
         entity.setContentType("application/x-www-form-urlencoded");
@@ -115,7 +116,7 @@ public class HttpRequestHelperTest {
         assertTrue(actualFormParams.containsKey("b"));
         assertTrue(actualFormParams.containsKey("c"));
         
-        assertEquals("2", actualFormParams.get("b"));
+        assertEquals("текст", actualFormParams.get("b"));
         assertEquals("3", actualFormParams.get("c"));
     }
     

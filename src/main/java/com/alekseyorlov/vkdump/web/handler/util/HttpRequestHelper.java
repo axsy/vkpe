@@ -7,11 +7,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpRequest;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
+import org.apache.http.entity.BasicHttpEntity;
+import org.apache.http.message.BasicHeader;
 
 public final class HttpRequestHelper {
 
@@ -34,8 +37,16 @@ public final class HttpRequestHelper {
     
     public static Map<String, String> getRequestParams(HttpEntityEnclosingRequest request) throws IOException {
         Map<String, String> collectedFormParams = null;
-        
         HttpEntity entity = ((HttpEntityEnclosingRequest)request).getEntity();
+        
+        // So,
+        // Behavior of URLEncodedUtils is broken in case UTF-8 data is being submitted from browser, because no browser
+        // is adding character set data to Content-Type header and UrlEncodedUtils "successfully" assumes charset is
+        // ISO_8859_1.
+        // That is why this hack is necessary to force the character set for the content type of http entity.
+        if (entity instanceof BasicHttpEntity) {
+            ((BasicHttpEntity)entity).setContentType("application/x-www-form-urlencoded;charset=utf-8");
+        }
         
         List<NameValuePair> formParams = URLEncodedUtils.parse(entity);
         if (formParams != null) {

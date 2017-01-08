@@ -2,6 +2,8 @@ package com.alekseyorlov.vkdump.web.handler;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
@@ -12,6 +14,7 @@ import org.apache.http.HttpException;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.protocol.HttpRequestHandler;
@@ -59,13 +62,8 @@ public class CaptchaRequestHandler implements HttpRequestHandler {
                                 (HttpEntityEnclosingRequest)request);
                         if (requestParams != null && requestParams.containsKey("captcha_key")
                                 && requestParams.containsKey("captcha_sid")) {
-                            
+
                             // Send captcha message
-                            
-                            // TODO: Replace with commented chunk of code
-//                            response.setEntity(new StringEntity(
-//                                    "key: " + requestParams.get("captcha_key")
-//                                    + ", sid: " + requestParams.get("captcha_sid")));
                             CaptchaMessage message = new CaptchaMessage();
                             message.setKey(requestParams.get("captcha_key"));
                             message.setSid(requestParams.get("captcha_sid"));
@@ -77,6 +75,7 @@ public class CaptchaRequestHandler implements HttpRequestHandler {
                                 response.setEntity(
                                         new StringEntity("Check console logs for information about further processing"
                                                 + " steps."));
+
                             } catch (InterruptedException e) {
                                 
                                 // Unrecoverable application issue
@@ -114,7 +113,7 @@ public class CaptchaRequestHandler implements HttpRequestHandler {
                 + "<title>Captcha check</title>"
                 + "</head>"
                 + "<body>"
-                + "<form method=\"post\">"
+                + "<form method=\"post\" accept-charset=\"utf-8\">"
                 + "<img src=\"" + imageUrl + "\"/><br/>"
                 + "<input type=\"text\" name=\"captcha_key\"><br/>"
                 + "<input type=\"hidden\" name=\"captcha_sid\" value=\"" + sid + "\"><br/>"
@@ -123,6 +122,6 @@ public class CaptchaRequestHandler implements HttpRequestHandler {
                 + "</body>"
                 + "</html>";
         
-        return new StringEntity(html, "text/html");
+        return new StringEntity(html, ContentType.TEXT_HTML);
     }
 }

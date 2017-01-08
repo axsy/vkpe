@@ -4,22 +4,27 @@ import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 
+import org.apache.http.HttpException;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpResponseInterceptor;
 import org.apache.http.config.SocketConfig;
 import org.apache.http.impl.bootstrap.HttpServer;
 import org.apache.http.impl.bootstrap.ServerBootstrap;
+import org.apache.http.protocol.HttpContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.alekseyorlov.vkdump.web.handler.AuthCodeCallbackRequestHandler;
 import com.alekseyorlov.vkdump.web.handler.CaptchaRequestHandler;
 import com.alekseyorlov.vkdump.web.handler.message.Message;
+import com.alekseyorlov.vkdump.web.interceptor.ShutdownResponseListener;
 
 public class HttpServerDirector implements Runnable {
 
     private static final Logger logger = LogManager.getLogger(HttpServerDirector.class);
     
     public static final String AUTHORIZATION_CODE_CALLBACK_URI = "/callback";
-    public static final String CAPTCHA_ERROR_URI = "/captcha"; 
+    public static final String CAPTCHA_URI = "/captcha"; 
     
     private BlockingQueue<Message> messageQueue;
     
@@ -47,10 +52,10 @@ public class HttpServerDirector implements Runnable {
         HttpServer server = ServerBootstrap.bootstrap()
                 .setListenerPort(port)
                 .setSocketConfig(SocketConfig.DEFAULT)
-                .setExceptionLogger(new HttpServerExceptionLogger(stopServerSignal))
                 .registerHandler(AUTHORIZATION_CODE_CALLBACK_URI,
                         new AuthCodeCallbackRequestHandler(messageQueue))
-                .registerHandler(CAPTCHA_ERROR_URI, new CaptchaRequestHandler(messageQueue))
+                .registerHandler(CAPTCHA_URI, new CaptchaRequestHandler(messageQueue))
+                .addInterceptorLast(new ShutdownResponseListener(stopServerSignal))
                 .create();
         
         try {
@@ -58,7 +63,6 @@ public class HttpServerDirector implements Runnable {
             // Start HTTP server
             logger.info("Starting HTTP server");
             server.start();
-            logger.info("Started HTTP server");
             
             // Notifying everyone about running HTTP server.
             serverIsStartedSignal.countDown();
@@ -69,7 +73,6 @@ public class HttpServerDirector implements Runnable {
             // Stop HTTP server
             logger.info("Stopping HTTP server");
             server.stop();
-            logger.info("Stopped HTTP server");
         } catch (IOException e) {
             
             // Nothing special to do there.

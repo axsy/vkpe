@@ -23,6 +23,7 @@ import com.alekseyorlov.vkdump.mapper.AuthorizationClientParametersMapper;
 import com.alekseyorlov.vkdump.parameters.ApplicationParameters;
 import com.alekseyorlov.vkdump.parameters.util.ScopeUtils;
 import com.alekseyorlov.vkdump.web.HttpServerDirector;
+import com.alekseyorlov.vkdump.web.handler.message.CaptchaMessage;
 import com.alekseyorlov.vkdump.web.handler.message.Message;
 import com.vk.api.sdk.client.actors.UserActor;
 
@@ -58,9 +59,9 @@ public class Application {
             
             // Authorize user
             AuthorizationClient authorizationClient = new AuthorizationClient(
-                    AuthorizationClientParametersMapper.map(parameters), messageQueue);
+                    AuthorizationClientParametersMapper.map(parameters), messageQueue, stopServerSignal);
             UserActor actor = authorizationClient.authorize(ScopeUtils.getActiveScopes(parameters));
-            
+          
             logger.info("Access token: " + actor.getAccessToken());
         } catch (InterruptedException | AuthorizationException e) {
             logger.fatal(e.getMessage());
