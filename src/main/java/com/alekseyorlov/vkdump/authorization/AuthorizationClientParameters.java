@@ -1,16 +1,12 @@
 package com.alekseyorlov.vkdump.authorization;
 
-import java.util.Set;
-
 public class AuthorizationClientParameters {
 
     private Integer appId;
     
     private String secureKey;
     
-    private Integer callbackServerPort;
-    
-    private Set<String> scopes;
+    private Integer port;
 
     public Integer getAppId() {
         return appId;
@@ -20,12 +16,8 @@ public class AuthorizationClientParameters {
         return secureKey;
     }
 
-    public Integer getCallbackServerPort() {
-        return callbackServerPort;
-    }
-
-    public Set<String> getScopes() {
-        return scopes;
+    public Integer getPort() {
+        return port;
     }
 
     public void setAppId(Integer appId) {
@@ -36,12 +28,8 @@ public class AuthorizationClientParameters {
         this.secureKey = secureKey;
     }
 
-    public void setCallbackServerPort(Integer callbackServerPort) {
-        this.callbackServerPort = callbackServerPort;
-    }
-
-    public void setScopes(Set<String> scopes) {
-        this.scopes = scopes;
+    public void setPort(Integer port) {
+        this.port = port;
     }
     
 }

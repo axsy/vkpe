@@ -4,13 +4,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.alekseyorlov.vkdump.authorization.AuthorizationClient;
-import com.alekseyorlov.vkdump.authorization.UserActorHandler;
 import com.vk.api.sdk.client.VkApiClient;
 import com.vk.api.sdk.client.actors.UserActor;
 import com.vk.api.sdk.httpclient.HttpTransportClient;
 import com.vk.api.sdk.objects.photos.responses.GetAlbumsResponse;
 
-public class DumperUserActorHandler implements UserActorHandler {
+public class DumperUserActorHandler  {
 
     private static final Logger logger = LogManager.getLogger(AuthorizationClient.class);
         
@@ -20,7 +19,6 @@ public class DumperUserActorHandler implements UserActorHandler {
         client = new VkApiClient(HttpTransportClient.getInstance());
     }
 
-    @Override
     public void handle(UserActor actor) throws Exception {
         GetAlbumsResponse response = client.photos().getAlbums(actor).execute();
         

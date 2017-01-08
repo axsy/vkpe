@@ -5,7 +5,7 @@ import java.lang.annotation.Target;
 import javax.validation.Constraint;
 import javax.validation.Payload;
 
-import com.alekseyorlov.vkdump.parameters.ParametersValidator;
+import com.alekseyorlov.vkdump.parameters.validation.ApplicationParametersValidator;
 
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
@@ -15,7 +15,7 @@ import java.lang.annotation.Retention;
 
 @Target({ TYPE })
 @Retention(RUNTIME)
-@Constraint(validatedBy = { ParametersValidator.class })
+@Constraint(validatedBy = { ApplicationParametersValidator.class })
 @Documented
 public @interface ValidScope {
 

@@ -1,11 +1,13 @@
-package com.alekseyorlov.vkdump.parameters;
+package com.alekseyorlov.vkdump.parameters.validation;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
+import com.alekseyorlov.vkdump.parameters.ApplicationParameters;
 import com.alekseyorlov.vkdump.parameters.annotation.ValidScope;
+import com.alekseyorlov.vkdump.parameters.util.ScopeUtils;
 
-public class ParametersValidator implements ConstraintValidator<ValidScope, ApplicationParameters> {
+public class ApplicationParametersValidator implements ConstraintValidator<ValidScope, ApplicationParameters> {
 
     @Override
     public void initialize(ValidScope constraintAnnotation) {
@@ -13,9 +15,8 @@ public class ParametersValidator implements ConstraintValidator<ValidScope, Appl
 
     @Override
     public boolean isValid(ApplicationParameters parameters, ConstraintValidatorContext context) {
-        ScopeExtractor scopeExtractor = new ScopeExtractor(parameters);
-
-        return !scopeExtractor.extract().isEmpty();
+        
+        return !ScopeUtils.getActiveScopes(parameters).isEmpty();
     }
 
 }

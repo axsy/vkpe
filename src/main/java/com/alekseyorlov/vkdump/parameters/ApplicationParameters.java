@@ -26,7 +26,7 @@ public class ApplicationParameters {
     private String secureKey;
     
     @Option(name = "-port", usage = "Application port")
-    private Integer callbackServerPort;
+    private Integer port;
     
     @Option(name = "-path", usage = "Dump path")
     private Path path;
@@ -43,13 +43,13 @@ public class ApplicationParameters {
         return appId;
     }
 
-    public Integer getCallbackServerPort() {
-        if (callbackServerPort == null) {
+    public Integer getPort() {
+        if (port == null) {
             Random random = new Random();
-            callbackServerPort = 1025 + random.nextInt(64511);
+            port = 1025 + random.nextInt(64511);
         }
         
-        return callbackServerPort;
+        return port;
     }
 
     public String getSecureKey() {
@@ -75,8 +75,8 @@ public class ApplicationParameters {
     }
 
 
-    public void setCallbackServerPort(Integer port) {
-        this.callbackServerPort = port;
+    public void setPort(Integer port) {
+        this.port = port;
     }
 
     public void setSecureKey(String secureKey) {
