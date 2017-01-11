@@ -19,6 +19,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.alekseyorlov.vkdump.authorization.AuthorizationClient;
 import com.alekseyorlov.vkdump.authorization.exception.AuthorizationException;
+import com.alekseyorlov.vkdump.client.exception.VKClientException;
 import com.alekseyorlov.vkdump.mapper.AuthorizationClientParametersMapper;
 import com.alekseyorlov.vkdump.parameters.ApplicationParameters;
 import com.alekseyorlov.vkdump.parameters.util.ScopeUtils;
@@ -68,7 +69,7 @@ public class Application {
             // Dump media content
             service.dump(ScopeUtils.getActiveScopes(parameters));
             
-        } catch (InterruptedException | AuthorizationException | ApiException | ClientException e) {
+        } catch (InterruptedException | AuthorizationException | VKClientException e) {
             logger.fatal(e.getMessage());
             
             // Shutdown HTTP server
