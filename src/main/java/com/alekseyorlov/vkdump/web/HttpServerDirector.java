@@ -30,18 +30,18 @@ public class HttpServerDirector implements Runnable {
     
     private CountDownLatch serverIsStartedSignal;
     
-    private CountDownLatch stopServerSignal;
+    private CountDownLatch shutdownSignal;
     
     private int port;
     
     public HttpServerDirector(
             BlockingQueue<Message> messageQueue,
             CountDownLatch serverIsStartedSignal,
-            CountDownLatch stopServerSignal,
+            CountDownLatch shutdownSignal,
             int port) {
         this.messageQueue = messageQueue;
         this.serverIsStartedSignal = serverIsStartedSignal;
-        this.stopServerSignal = stopServerSignal;
+        this.shutdownSignal = shutdownSignal;
         this.port = port;
     }
 
@@ -55,7 +55,7 @@ public class HttpServerDirector implements Runnable {
                 .registerHandler(AUTHORIZATION_CODE_CALLBACK_URI,
                         new AuthCodeCallbackRequestHandler(messageQueue))
                 .registerHandler(CAPTCHA_URI, new CaptchaRequestHandler(messageQueue))
-                .addInterceptorLast(new ShutdownResponseListener(stopServerSignal))
+                .addInterceptorLast(new ShutdownResponseListener(shutdownSignal))
                 .create();
         
         try {
@@ -68,7 +68,7 @@ public class HttpServerDirector implements Runnable {
             serverIsStartedSignal.countDown();
             
             // Wait for the HTTP server stopping phase.
-            stopServerSignal.await();
+            shutdownSignal.await();
             
             // Stop HTTP server
             logger.info("Stopping HTTP server");

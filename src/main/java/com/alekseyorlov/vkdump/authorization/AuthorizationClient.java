@@ -39,19 +39,18 @@ public class AuthorizationClient {
     
     private final static Logger logger = LogManager.getLogger(AuthorizationClient.class);
     
-    
     private AuthorizationClientParameters parameters;
     private BlockingQueue<Message> messageQueue;
-    private CountDownLatch stopServerSignal;
+    private CountDownLatch shutdownSignal;
     private VkApiClient vk;
 
     public AuthorizationClient(
             AuthorizationClientParameters parameters,
             BlockingQueue<Message> messageQueue,
-            CountDownLatch stopServerSignal) {
+            CountDownLatch shutdownSignal) {
         this.parameters = parameters;
         this.messageQueue = messageQueue;
-        this.stopServerSignal = stopServerSignal;
+        this.shutdownSignal = shutdownSignal;
         
         vk = new VkApiClient(HttpTransportClient.getInstance());
     }
@@ -180,7 +179,7 @@ public class AuthorizationClient {
         Message message = null;
         do {
             message = messageQueue.poll(MESSAGE_POOL_TIMEOUT, TimeUnit.SECONDS);
-        } while (stopServerSignal.getCount() != 0 && message == null);
+        } while (shutdownSignal.getCount() != 0 && message == null);
         
         if (message == null) {
             throw new AuthorizationException("Can't obtain message because HTTP server is shuted down");

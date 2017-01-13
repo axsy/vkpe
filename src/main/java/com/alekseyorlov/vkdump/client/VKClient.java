@@ -1,5 +1,6 @@
 package com.alekseyorlov.vkdump.client;
 
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -34,13 +35,14 @@ public class VKClient {
 
     private VKApiRequestExecutor executor;
     
-    public VKClient(AuthorizationClient authorizationClient) {
+    public VKClient(AuthorizationClient authorizationClient, CountDownLatch shutdownSignal) {
         this.authorizationClient = authorizationClient;
         apiClient = new VkApiClient(HttpTransportClient.getInstance());
         executor = new VKApiRequestExecutor(
                 MAX_REQUESTS_PER_BATCH_WINDOW,
                 BATCH_WINDOW_LENGTH,
-                BATCH_WINDOW_LENGTH_TIMEUNIT);
+                BATCH_WINDOW_LENGTH_TIMEUNIT,
+                shutdownSignal);
     }
     
     public Integer getAlbumsCount(UserActor actor) throws VKClientException {

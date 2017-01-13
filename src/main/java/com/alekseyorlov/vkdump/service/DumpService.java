@@ -3,6 +3,7 @@ package com.alekseyorlov.vkdump.service;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.concurrent.CountDownLatch;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -26,9 +27,9 @@ public class DumpService {
     
     private VKClient apiClient;
     
-    public DumpService(AuthorizationClient authorizationClient, Path rootPath) {
+    public DumpService(AuthorizationClient authorizationClient, Path rootPath, CountDownLatch shutdownSignal) {
         this.authorizationClient = authorizationClient;
-        this.apiClient = new VKClient(authorizationClient);
+        this.apiClient = new VKClient(authorizationClient, shutdownSignal);
         this.rootPath = rootPath;
     }
     
@@ -38,7 +39,7 @@ public class DumpService {
         // Authorize user
         logger.info("Authorizing user with scopes {}", Arrays.asList(scopes.toArray()));
         UserActor actor = authorizationClient.authorize(scopes);
-        
+
         for(AuthorizationScope scope: scopes) {
             switch(scope) {
             case PHOTOS:
@@ -51,11 +52,12 @@ public class DumpService {
                 //       * Captcha support!
                 //       * Implement client.VKClient, it should provide VK client method wrappers (as well as VKApiClient as well,
                 //         delete it from this class) and should block calls in case limit is reached
+                //       - Shutdown process
                 //       - Implement processing using Fork-Join stuff (use CPUs count for that, should it be configured?)
                 //         Could it be generic, for audio and photos?
                 //         get list / download / store (Downloader / NamingStrategy etc.)
                 //         think on it checking the VK SDK api.
-                //       - Shutdown process
+
                 
                 
                 

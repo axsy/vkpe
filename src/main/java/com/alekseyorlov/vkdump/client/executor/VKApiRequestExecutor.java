@@ -2,12 +2,16 @@ package com.alekseyorlov.vkdump.client.executor;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.alekseyorlov.vkdump.client.executor.query.QueryWrapper;
 import com.alekseyorlov.vkdump.client.executor.query.QueryResult;
@@ -17,6 +21,8 @@ import com.vk.api.sdk.client.ApiRequest;
 
 public class VKApiRequestExecutor {
     
+    private static final Logger logger = LogManager.getLogger(VKApiRequestExecutor.class);
+    
     private DelayQueue<QueryWrapper<?>> queue = new DelayQueue<>();
 
     private Long batchWindowLength;
@@ -25,32 +31,40 @@ public class VKApiRequestExecutor {
     
     private ExecutorService writerExecutor;
     
-    private  ScheduledExecutorService readerExecutor = Executors.newScheduledThreadPool(1);
+    private  ScheduledExecutorService readerExecutor;
     
     public VKApiRequestExecutor(
             Integer maxRequestsCount,
             Long batchWindowLength,
-            TimeUnit batchWindowLengthTimeUnit) {
+            TimeUnit batchWindowLengthTimeUnit,
+            CountDownLatch shutdownSignal) {
         this.batchWindowLength = batchWindowLength;
         this.batchWindowLengthTimeUnit = batchWindowLengthTimeUnit;
         
         writerExecutor = Executors.newFixedThreadPool(maxRequestsCount);
+        readerExecutor = Executors.newScheduledThreadPool(1);
         
         readerExecutor.scheduleWithFixedDelay(new Runnable() {
 
             @Override
             public void run() {
-                for(int i = 0; i < maxRequestsCount; i++) {
-                    QueryWrapper<?> queryWrapper = queue.poll();
-                    if (queryWrapper != null) {
-                        writerExecutor.submit(new QueryWrapperExecutor(queryWrapper));
+                if (shutdownSignal.getCount() == 0) {
+                    logger.info("Shutting down API request executor");
+                    writerExecutor.shutdown();
+                    readerExecutor.shutdown();
+                } else {
+                    for(int i = 0; i < maxRequestsCount; i++) {
+                        QueryWrapper<?> queryWrapper = queue.poll();
+                        if (queryWrapper != null) {
+                            writerExecutor.submit(new QueryWrapperExecutor(queryWrapper));
+                        }
                     }
                 }
             }
         }, 0L, batchWindowLength, batchWindowLengthTimeUnit);
     }
  
-    public <Query extends ApiRequest<Result>, Result> Future<Result> execute(Query query) throws InterruptedException {
+    public <Query extends ApiRequest<Result>, Result> Future<Result> execute(Query query) {
 
         BlockingQueue<QueryResultMessage<Result>> channel = new ArrayBlockingQueue<>(1);
         queue.put(new QueryWrapper<Result>(query, channel, batchWindowLength, batchWindowLengthTimeUnit));

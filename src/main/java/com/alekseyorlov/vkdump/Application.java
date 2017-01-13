@@ -40,7 +40,7 @@ public class Application {
     
     private CountDownLatch serverIsStartedSignal = new CountDownLatch(1);
     
-    private CountDownLatch stopServerSignal = new CountDownLatch(1);
+    private CountDownLatch shutdownSignal = new CountDownLatch(1);
     
     public Application(ApplicationParameters parameters) {
         this.parameters = parameters;
@@ -52,7 +52,7 @@ public class Application {
         new Thread(new HttpServerDirector(
                 messageQueue,
                 serverIsStartedSignal,
-                stopServerSignal,
+                shutdownSignal,
                 parameters.getPort()))
                 .start();
         
@@ -63,17 +63,16 @@ public class Application {
             
             // Instantiate dump service
             AuthorizationClient authorizationClient = new AuthorizationClient(
-                    AuthorizationClientParametersMapper.map(parameters), messageQueue, stopServerSignal);
-            DumpService service = new DumpService(authorizationClient, parameters.getPath());
+                    AuthorizationClientParametersMapper.map(parameters), messageQueue, shutdownSignal);
+            DumpService service = new DumpService(authorizationClient, parameters.getPath(), shutdownSignal);
             
             // Dump media content
             service.dump(ScopeUtils.getActiveScopes(parameters));
             
         } catch (InterruptedException | AuthorizationException | VKClientException e) {
             logger.fatal(e.getMessage());
-            
-            // Shutdown HTTP server
-            stopServerSignal.countDown();
+        } finally {
+            shutdownSignal.countDown();
         }
     }
 
