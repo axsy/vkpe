@@ -17,6 +17,8 @@ import org.apache.http.message.BasicHttpEntityEnclosingRequest;
 import org.apache.http.message.BasicHttpRequest;
 import org.junit.Test;
 
+import com.alekseyorlov.vkpe.web.handler.util.HttpRequestHelper;
+
 public class HttpRequestHelperTest {
 
     @Test
