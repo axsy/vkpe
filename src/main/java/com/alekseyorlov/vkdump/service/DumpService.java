@@ -24,10 +24,11 @@ public class DumpService {
     
     private Path rootPath;
     
-    private VKClient client = new VKClient();
+    private VKClient apiClient;
     
     public DumpService(AuthorizationClient authorizationClient, Path rootPath) {
         this.authorizationClient = authorizationClient;
+        this.apiClient = new VKClient(authorizationClient);
         this.rootPath = rootPath;
     }
     
@@ -43,16 +44,18 @@ public class DumpService {
             case PHOTOS:
                 
                 // Dump Photos
-                Integer albumsCount = client.getAlbumsCount(actor);
+                Integer albumsCount = apiClient.getAlbumsCount(actor);
                 logger.info("Albums count: " + albumsCount);
                 
                 // TODO: Implement photo dumper support (first, check VK API carefully)
+                //       * Captcha support!
                 //       * Implement client.VKClient, it should provide VK client method wrappers (as well as VKApiClient as well,
                 //         delete it from this class) and should block calls in case limit is reached
                 //       - Implement processing using Fork-Join stuff (use CPUs count for that, should it be configured?)
                 //         Could it be generic, for audio and photos?
                 //         get list / download / store (Downloader / NamingStrategy etc.)
                 //         think on it checking the VK SDK api.
+                //       - Shutdown process
                 
                 
                 
