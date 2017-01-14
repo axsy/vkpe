@@ -12,6 +12,7 @@ import com.alekseyorlov.vkpe.authorization.AuthorizationClient;
 import com.alekseyorlov.vkpe.authorization.exception.AuthorizationException;
 import com.alekseyorlov.vkpe.client.exception.ApiClientException;
 import com.alekseyorlov.vkpe.client.executor.VKApiRequestExecutor;
+import com.alekseyorlov.vkpe.content.ServiceAlbumType;
 import com.alekseyorlov.vkpe.web.handler.message.CaptchaMessage;
 import com.vk.api.sdk.client.AbstractQueryBuilder;
 import com.vk.api.sdk.client.VkApiClient;
@@ -67,7 +68,20 @@ public class ApiClient {
                 albumsQuery);
     }
     
-    public GetResponse getPhotos(UserActor actor, Integer albumId, Integer offset, Integer count)
+    public Integer getPhotosCount(UserActor actor, ServiceAlbumType albumType) throws ApiClientException {
+        AbstractQueryBuilder<PhotosGetQuery, GetResponse> photosQuery = vkApiClient
+                .photos()
+                .get(actor)
+                .albumId(albumType.getId())
+                .photoIds("-1"); // forces API to return photos count only
+        
+        GetResponse response = this.<AbstractQueryBuilder<PhotosGetQuery, GetResponse>, GetResponse>execute(
+                photosQuery);
+        
+        return response.getCount();
+    }
+    
+    public GetResponse getPhotos(UserActor actor, String albumId, Integer offset, Integer count)
             throws ApiClientException {
         AbstractQueryBuilder<PhotosGetQuery, GetResponse> photosQuery = vkApiClient
                 .photos()

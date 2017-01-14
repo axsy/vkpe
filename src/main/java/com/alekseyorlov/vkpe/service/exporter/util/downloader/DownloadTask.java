@@ -14,10 +14,15 @@ import java.time.ZoneOffset;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.alekseyorlov.vkpe.service.exporter.util.downloader.exception.TaskExecutionException;
 
 public class DownloadTask implements Callable<String> {
 
+    private static final Logger logger = LogManager.getLogger(DownloadTask.class);
+    
     public static class File {
         
         private URL url;
@@ -63,21 +68,27 @@ public class DownloadTask implements Callable<String> {
         ReadableByteChannel rbc;
         try {
             
-            // Prepare directory
-            file.getDestination().toFile().getParentFile().mkdirs();
-            Files.createFile(file.getDestination());
-            
-            // Download
-            rbc = Channels.newChannel(file.getUrl().openStream());
-            try (FileOutputStream fos = new FileOutputStream(file.getDestination().toFile())) {
-                fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+            if (!Files.exists(file.getDestination())) {
+                // Prepare directory
+                file.getDestination().toFile().getParentFile().mkdirs();
+                Files.createFile(file.getDestination());
+                
+                // Download
+                rbc = Channels.newChannel(file.getUrl().openStream());
+                try (FileOutputStream fos = new FileOutputStream(file.getDestination().toFile())) {
+                    fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+                }
+                
+                // Set `created` attribute
+                FileTime timestamp = FileTime.fromMillis(
+                        TimeUnit.SECONDS.toMillis(file.getCreatedAt().toEpochSecond(ZoneOffset.UTC)));
+                Files.getFileAttributeView(file.getDestination(), BasicFileAttributeView.class)
+                .setTimes(timestamp, timestamp, timestamp);
+            } else {
+                
+                // Not a fatal issue. In fact duplication of photos from 'saved' service album is usual thing. 
+                logger.error("File {} exists already", file.getDestination().toString());
             }
-            
-            // Set `created` attribute
-            FileTime timestamp = FileTime.fromMillis(
-                    TimeUnit.SECONDS.toMillis(file.getCreatedAt().toEpochSecond(ZoneOffset.UTC)));
-            Files.getFileAttributeView(file.getDestination(), BasicFileAttributeView.class)
-            .setTimes(timestamp, timestamp, timestamp);
         } catch (IOException e) {
             throw new TaskExecutionException(file, e);
         }

@@ -8,6 +8,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.alekseyorlov.vkpe.client.ApiClient;
 import com.alekseyorlov.vkpe.client.exception.ApiClientException;
+import com.alekseyorlov.vkpe.content.ServiceAlbumType;
 import com.alekseyorlov.vkpe.service.exporter.MediaContentExporter;
 import com.alekseyorlov.vkpe.service.exporter.util.DownloadManager;
 import com.alekseyorlov.vkpe.service.exporter.util.Pager;
@@ -48,14 +49,29 @@ public class PhotoExporter implements MediaContentExporter{
 
     @Override
     public void exportTo(Path destinationRootPath) throws ApiClientException {
-        logger.info("Exporting photos");
         logger.debug("Albums page size: {}", albumsPageSize);
         logger.debug("Photos page size: {}", photosPageSize);
         
-        // Getting albums count
+        logger.info("Exporting profile photos");
+        exportServiceAlbumPhotosTo(destinationRootPath, ServiceAlbumType.PROFILE);
+        
+        logger.info("Exporting photos on wall");
+        exportServiceAlbumPhotosTo(destinationRootPath, ServiceAlbumType.WALL);
+        
+        logger.info("Exporting saved photos");
+        exportServiceAlbumPhotosTo(destinationRootPath, ServiceAlbumType.SAVED);
+        
+        logger.info("Exporting albums");
+        exportPhotoAlbumsTo(destinationRootPath);
+    }
+
+    
+    private void exportPhotoAlbumsTo(Path destinationRootPath) throws ApiClientException {
         logger.debug("Getting albums count");
         Integer albumsCount = apiClient.getAlbumsCount(actor);
         logger.debug("Albums count: {}", albumsCount);
+        
+        PhotosToDownloadTaskFileMapper mapper = new PhotosToDownloadTaskFileMapper(destinationRootPath);
         
         for(Pager.Page albumPage: new Pager(albumsCount, albumsPageSize)) {
             GetAlbumsResponse albumsResponse = apiClient.getAlbums(actor, albumPage.getOffset(), albumPage.getCount());
@@ -66,13 +82,12 @@ public class PhotoExporter implements MediaContentExporter{
                 for (Pager.Page photosPage: new Pager(album.getSize(), photosPageSize)) {
                     GetResponse photosResponse = apiClient.getPhotos(
                             actor,
-                            album.getId(),
+                            album.getId().toString(),
                             photosPage.getOffset(),
                             photosPage.getCount());
                     
                     // Download files in page
                     logger.info("Downloading batch of {} photo(s)", photosResponse.getCount());
-                    PhotosToDownloadTaskFileMapper mapper = new PhotosToDownloadTaskFileMapper(destinationRootPath);
                     Collection<DownloadTask.File> failedFiles = manager.download(mapper.map(
                             album, photosResponse.getItems()));
                     if (!failedFiles.isEmpty()) {
@@ -81,7 +96,30 @@ public class PhotoExporter implements MediaContentExporter{
                 }
             }
         }
-        
     }
-
+    
+    private void exportServiceAlbumPhotosTo(Path destinationRootPath, ServiceAlbumType albumType)
+            throws ApiClientException {
+        logger.debug("Getting wall photos count");
+        Integer photosCount = apiClient.getPhotosCount(actor, albumType);
+        logger.debug("Photos count: {}", photosCount);
+        
+        PhotosToDownloadTaskFileMapper mapper = new PhotosToDownloadTaskFileMapper(destinationRootPath);
+        
+        for (Pager.Page photosPage: new Pager(photosCount, photosPageSize)) {
+            GetResponse photosResponse = apiClient.getPhotos(
+                    actor,
+                    albumType.getId(),
+                    photosPage.getOffset(),
+                    photosPage.getCount());
+            
+            // Download files in page
+            logger.info("Downloading batch of {} photo(s)", photosResponse.getCount());
+            Collection<DownloadTask.File> failedFiles = manager.download(mapper.map(
+                    albumType, photosResponse.getItems()));
+            if (!failedFiles.isEmpty()) {
+                logger.error("Failed to download {} image(s) from album", failedFiles.size());
+            }
+        }
+    }
 }

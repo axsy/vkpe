@@ -15,6 +15,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.alekseyorlov.vkpe.content.ServiceAlbumType;
 import com.alekseyorlov.vkpe.service.exporter.util.FilenameSanitizer;
 import com.alekseyorlov.vkpe.service.exporter.util.downloader.DownloadTask;
 import com.vk.api.sdk.objects.photos.Photo;
@@ -23,7 +24,7 @@ import com.vk.api.sdk.objects.photos.PhotoSizes;
 import com.vk.api.sdk.objects.photos.PhotoSizesType;
 
 public class PhotosToDownloadTaskFileMapper {
-
+    
     // https://vk.com/dev/objects/photo_sizes
     private static List<PhotoSizesType> preferredPhotoSizes = Arrays.asList(
             PhotoSizesType.W,
@@ -50,6 +51,23 @@ public class PhotosToDownloadTaskFileMapper {
                 DownloadTask.File file = new DownloadTask.File();
                 file.setUrl(imageUrl);
                 file.setDestination(getDestinationFilename(album, photo, file.getUrl()));
+                file.setCreatedAt(getCreatedTime(photo));
+                files.add(file);
+            }
+        }
+        
+        return files;
+    }
+    
+    public Collection<DownloadTask.File> map(ServiceAlbumType albumType, Collection<Photo> photos) {
+        Collection<DownloadTask.File> files = new ArrayList<>();
+        
+        for (Photo photo: photos) {
+            URL imageUrl = getLargestImageUrl(photo);
+            if (imageUrl != null) {
+                DownloadTask.File file = new DownloadTask.File();
+                file.setUrl(imageUrl);
+                file.setDestination(getDestinationFilename(albumType, photo, file.getUrl()));
                 file.setCreatedAt(getCreatedTime(photo));
                 files.add(file);
             }
@@ -94,6 +112,13 @@ public class PhotosToDownloadTaskFileMapper {
                 destinationRootPath.toString(),
                 "photos",
                 FilenameSanitizer.sanitize(album.getTitle()),
+                FilenameUtils.getName(srcUrl.getPath()));
+    }
+    
+    private Path getDestinationFilename(ServiceAlbumType albumType, Photo photo, URL srcUrl) {
+        return Paths.get(
+                destinationRootPath.toString(),
+                FilenameSanitizer.sanitize(albumType.getId()),
                 FilenameUtils.getName(srcUrl.getPath()));
     }
     
