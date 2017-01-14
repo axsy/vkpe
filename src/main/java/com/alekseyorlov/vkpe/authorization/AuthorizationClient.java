@@ -66,7 +66,7 @@ public class AuthorizationClient {
                 
                 // Getting the authorization code
                 try {
-                    logger.info("Whaiting for the authorization code to be sent");
+                    logger.info("Waiting for the authorization code to be sent");
                     Message message = takeMessageFromQueue();
                     logger.info("Authorization code is obtained");
                     

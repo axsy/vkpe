@@ -86,7 +86,7 @@ public class PhotoExporter implements MediaContentExporter{
                             photosPage.getOffset(),
                             photosPage.getCount());
                     
-                    // Download files in page
+                    // Download files on page
                     logger.info("Downloading batch of {} photo(s)", photosResponse.getCount());
                     Collection<DownloadTask.File> failedFiles = manager.download(mapper.map(
                             album, photosResponse.getItems()));
@@ -113,7 +113,7 @@ public class PhotoExporter implements MediaContentExporter{
                     photosPage.getOffset(),
                     photosPage.getCount());
             
-            // Download files in page
+            // Download files on page
             logger.info("Downloading batch of {} photo(s)", photosResponse.getCount());
             Collection<DownloadTask.File> failedFiles = manager.download(mapper.map(
                     albumType, photosResponse.getItems()));
