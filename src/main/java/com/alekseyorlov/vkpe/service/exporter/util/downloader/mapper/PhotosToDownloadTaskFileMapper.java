@@ -110,7 +110,7 @@ public class PhotosToDownloadTaskFileMapper {
     private Path getDestinationFilename(PhotoAlbumFull album, Photo photo, URL srcUrl) {
         return Paths.get(
                 destinationRootPath.toString(),
-                "photos",
+                "albums",
                 FilenameSanitizer.sanitize(album.getTitle()),
                 FilenameUtils.getName(srcUrl.getPath()));
     }
